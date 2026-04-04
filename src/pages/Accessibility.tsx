@@ -1,9 +1,25 @@
+import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { useApp } from "@/contexts/AppContext";
 import { Eye, AlertTriangle, ToggleLeft, ToggleRight } from "lucide-react";
+import { fetchAccessibilityCues } from "@/services/api";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface Cue {
+  id: string;
+  scene: string;
+  description: string;
+  obstacles: string[];
+}
 
 export default function Accessibility() {
-  const { accessibilityMode, toggleAccessibility, accessibilityCues } = useApp();
+  const { accessibilityMode, toggleAccessibility } = useApp();
+  const [cues, setCues] = useState<Cue[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAccessibilityCues().then((data) => { setCues(data); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
 
   return (
     <Layout>
@@ -28,7 +44,9 @@ export default function Accessibility() {
               Scene descriptions and obstacle hints are active. Sheba will provide accessibility cues during voice interactions.
             </p>
             <div className="space-y-4">
-              {accessibilityCues.map((cue, i) => (
+              {loading ? Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+              )) : cues.map((cue, i) => (
                 <div key={cue.id} className="card-luxury animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
                   <h3 className="font-display text-lg font-semibold text-foreground mb-2">{cue.scene}</h3>
                   <p className="text-sm text-muted-foreground mb-3">{cue.description}</p>

@@ -1,6 +1,17 @@
+import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { resortExperiences } from "@/data/seedData";
+import { fetchExperiences } from "@/services/api";
 import { Compass, Clock } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface Experience {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  duration: string;
+  icon: string;
+}
 
 const categoryColors: Record<string, string> = {
   Culture: "bg-primary/10 text-primary",
@@ -10,6 +21,13 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function Experiences() {
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchExperiences().then((data) => { setExperiences(data); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
+
   return (
     <Layout>
       <div className="max-w-lg mx-auto px-4 py-6">
@@ -22,7 +40,9 @@ export default function Experiences() {
         </p>
 
         <div className="grid gap-4">
-          {resortExperiences.map((exp, i) => (
+          {loading ? Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-2xl" />
+          )) : experiences.map((exp, i) => (
             <div key={exp.id} className="card-luxury animate-fade-in-up" style={{ animationDelay: `${i * 0.08}s` }}>
               <div className="flex items-start gap-4">
                 <span className="text-3xl">{exp.icon}</span>
