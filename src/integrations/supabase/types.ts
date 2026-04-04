@@ -14,7 +14,156 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      accessibility_cues: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          obstacles: string[]
+          scene: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          obstacles?: string[]
+          scene: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          obstacles?: string[]
+          scene?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          cultural_tip: string | null
+          id: string
+          language: string
+          original_text: string
+          role: string
+          session_id: string
+          translated_text: string | null
+        }
+        Insert: {
+          created_at?: string
+          cultural_tip?: string | null
+          id?: string
+          language?: string
+          original_text: string
+          role: string
+          session_id: string
+          translated_text?: string | null
+        }
+        Update: {
+          created_at?: string
+          cultural_tip?: string | null
+          id?: string
+          language?: string
+          original_text?: string
+          role?: string
+          session_id?: string
+          translated_text?: string | null
+        }
+        Relationships: []
+      }
+      cultural_tips: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          language: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          language?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          language?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      resort_experiences: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          duration: string
+          icon: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          duration: string
+          icon?: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          duration?: string
+          icon?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      resort_faqs: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          id: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category?: string
+          created_at?: string
+          id?: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          id?: string
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
