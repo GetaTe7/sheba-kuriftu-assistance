@@ -1,51 +1,87 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
-import { useApp } from "@/contexts/AppContext";
-import { Settings, Plus, Trash2, BookOpen, HelpCircle, Eye } from "lucide-react";
+import { Settings, Plus, Trash2, BookOpen, HelpCircle, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import type { CulturalTip, ResortFAQ } from "@/data/seedData";
+import { fetchCulturalTips, fetchFaqs, fetchAccessibilityCues, addCulturalTip, deleteCulturalTip, addFaq, deleteFaq } from "@/services/api";
+import { toast } from "sonner";
 
 type Tab = "tips" | "faqs" | "cues";
 
+interface Tip { id: string; title: string; description: string; category: string; }
+interface Faq { id: string; question: string; answer: string; category: string; }
+interface Cue { id: string; scene: string; description: string; obstacles: string[]; }
+
 export default function Admin() {
-  const { culturalTips, faqs, accessibilityCues, setCulturalTips, setFaqs } = useApp();
   const [tab, setTab] = useState<Tab>("tips");
+  const [tips, setTips] = useState<Tip[]>([]);
+  const [faqs, setFaqs] = useState<Faq[]>([]);
+  const [cues, setCues] = useState<Cue[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const handleAddTip = () => {
+  useEffect(() => {
+    Promise.all([fetchCulturalTips(), fetchFaqs(), fetchAccessibilityCues()])
+      .then(([t, f, c]) => { setTips(t); setFaqs(f); setCues(c); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleAddTip = async () => {
     if (!newTitle || !newDesc) return;
-    const tip: CulturalTip = { id: Date.now().toString(), title: newTitle, description: newDesc, category: newCategory || "General", language: "en" };
-    setCulturalTips([...culturalTips, tip]);
-    resetForm();
+    setSaving(true);
+    try {
+      const tip = await addCulturalTip({ title: newTitle, description: newDesc, category: newCategory || "General" });
+      setTips([...tips, tip]);
+      resetForm();
+      toast.success("Cultural tip added");
+    } catch { toast.error("Failed to add tip"); }
+    finally { setSaving(false); }
   };
 
-  const handleAddFaq = () => {
+  const handleAddFaq = async () => {
     if (!newTitle || !newDesc) return;
-    const faq: ResortFAQ = { id: Date.now().toString(), question: newTitle, answer: newDesc, category: newCategory || "General" };
-    setFaqs([...faqs, faq]);
-    resetForm();
+    setSaving(true);
+    try {
+      const faq = await addFaq({ question: newTitle, answer: newDesc, category: newCategory || "General" });
+      setFaqs([...faqs, faq]);
+      resetForm();
+      toast.success("FAQ added");
+    } catch { toast.error("Failed to add FAQ"); }
+    finally { setSaving(false); }
   };
 
-  const resetForm = () => {
-    setNewTitle("");
-    setNewDesc("");
-    setNewCategory("");
-    setShowForm(false);
+  const handleDeleteTip = async (id: string) => {
+    try { await deleteCulturalTip(id); setTips(tips.filter(t => t.id !== id)); toast.success("Deleted"); }
+    catch { toast.error("Failed to delete"); }
   };
 
-  const deleteTip = (id: string) => setCulturalTips(culturalTips.filter((t) => t.id !== id));
-  const deleteFaq = (id: string) => setFaqs(faqs.filter((f) => f.id !== id));
+  const handleDeleteFaq = async (id: string) => {
+    try { await deleteFaq(id); setFaqs(faqs.filter(f => f.id !== id)); toast.success("Deleted"); }
+    catch { toast.error("Failed to delete"); }
+  };
+
+  const resetForm = () => { setNewTitle(""); setNewDesc(""); setNewCategory(""); setShowForm(false); };
 
   const tabs = [
-    { key: "tips" as Tab, label: "Cultural Tips", icon: BookOpen, count: culturalTips.length },
+    { key: "tips" as Tab, label: "Cultural Tips", icon: BookOpen, count: tips.length },
     { key: "faqs" as Tab, label: "FAQs", icon: HelpCircle, count: faqs.length },
-    { key: "cues" as Tab, label: "Accessibility", icon: Eye, count: accessibilityCues.length },
+    { key: "cues" as Tab, label: "Accessibility", icon: Eye, count: cues.length },
   ];
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -55,51 +91,44 @@ export default function Admin() {
           <h1 className="font-display text-2xl font-semibold text-foreground">Admin Dashboard</h1>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {tabs.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => { setTab(t.key); setShowForm(false); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-                tab === t.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              }`}
-            >
+            <button key={t.key} onClick={() => { setTab(t.key); setShowForm(false); }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${tab === t.key ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
               <t.icon className="w-4 h-4" /> {t.label} ({t.count})
             </button>
           ))}
         </div>
 
-        {/* Add button */}
         {tab !== "cues" && (
           <Button onClick={() => setShowForm(!showForm)} variant="outline" className="mb-4 w-full">
             <Plus className="w-4 h-4 mr-2" /> Add {tab === "tips" ? "Cultural Tip" : "FAQ"}
           </Button>
         )}
 
-        {/* Add form */}
         {showForm && (
           <div className="card-luxury mb-4 space-y-3">
             <Input placeholder={tab === "tips" ? "Tip title" : "Question"} value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
             <Textarea placeholder={tab === "tips" ? "Tip description" : "Answer"} value={newDesc} onChange={(e) => setNewDesc(e.target.value)} />
             <Input placeholder="Category" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} />
             <div className="flex gap-2">
-              <Button onClick={tab === "tips" ? handleAddTip : handleAddFaq} className="flex-1">Save</Button>
+              <Button onClick={tab === "tips" ? handleAddTip : handleAddFaq} className="flex-1" disabled={saving}>
+                {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null} Save
+              </Button>
               <Button variant="outline" onClick={resetForm}>Cancel</Button>
             </div>
           </div>
         )}
 
-        {/* Content list */}
         <div className="space-y-3">
-          {tab === "tips" && culturalTips.map((tip) => (
+          {tab === "tips" && tips.map((tip) => (
             <div key={tip.id} className="card-luxury flex items-start justify-between">
               <div className="flex-1 mr-3">
                 <p className="font-medium text-sm text-foreground">{tip.title}</p>
                 <p className="text-xs text-muted-foreground mt-1">{tip.description}</p>
                 <span className="badge-cultural mt-2">{tip.category}</span>
               </div>
-              <button onClick={() => deleteTip(tip.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+              <button onClick={() => handleDeleteTip(tip.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -112,13 +141,13 @@ export default function Admin() {
                 <p className="text-xs text-muted-foreground mt-1">{faq.answer}</p>
                 <span className="badge-cultural mt-2">{faq.category}</span>
               </div>
-              <button onClick={() => deleteFaq(faq.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
+              <button onClick={() => handleDeleteFaq(faq.id)} className="text-muted-foreground hover:text-destructive transition-colors p-1">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           ))}
 
-          {tab === "cues" && accessibilityCues.map((cue) => (
+          {tab === "cues" && cues.map((cue) => (
             <div key={cue.id} className="card-luxury">
               <p className="font-medium text-sm text-foreground">{cue.scene}</p>
               <p className="text-xs text-muted-foreground mt-1">{cue.description}</p>

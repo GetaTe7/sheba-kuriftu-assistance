@@ -1,6 +1,15 @@
+import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import { useApp } from "@/contexts/AppContext";
 import { BookOpen } from "lucide-react";
+import { fetchCulturalTips } from "@/services/api";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface Tip {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+}
 
 const categoryColors: Record<string, string> = {
   Greetings: "bg-primary/10 text-primary",
@@ -10,7 +19,12 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function CulturalTips() {
-  const { culturalTips } = useApp();
+  const [tips, setTips] = useState<Tip[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCulturalTips().then((data) => { setTips(data); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
 
   return (
     <Layout>
@@ -24,7 +38,9 @@ export default function CulturalTips() {
         </p>
 
         <div className="space-y-4">
-          {culturalTips.map((tip, i) => (
+          {loading ? Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+          )) : tips.map((tip, i) => (
             <div key={tip.id} className="card-luxury animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
               <div className="flex items-start justify-between mb-2">
                 <h3 className="font-display text-lg font-semibold text-foreground">{tip.title}</h3>
