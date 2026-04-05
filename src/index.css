@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -156,4 +156,26 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.5s ease-out forwards;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-6px); }
+  80%       { transform: translateX(6px); }
+}
+
+.animate-shake {
+  animation: shake 0.45s ease-in-out;
+}
+
+@keyframes listening-ring {
+  0%   { box-shadow: 0 0 0 0 hsl(38 65% 55% / 0.5); }
+  70%  { box-shadow: 0 0 0 16px hsl(38 65% 55% / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(38 65% 55% / 0); }
+}
+
+.listening-ring {
+  animation: listening-ring 1.2s ease-out infinite;
 }

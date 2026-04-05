@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Globe, ArrowRight } from "lucide-react";
 
 const languages = [
-  { code: "en", label: "English", native: "English" },
-  { code: "am", label: "Amharic", native: "አማርኛ" },
-  { code: "om", label: "Afaan Oromo", native: "Afaan Oromoo" },
+  { code: "en", label: "English", native: "English", beta: false },
+  { code: "am", label: "Amharic", native: "አማርኛ", beta: false },
+  { code: "om", label: "Afaan Oromo", native: "Afaan Oromoo", beta: true },
 ];
 
 export default function Welcome() {
@@ -29,6 +29,9 @@ export default function Welcome() {
         <h1 className="font-display text-4xl font-bold text-foreground mb-2">Sheba</h1>
         <p className="text-muted-foreground text-lg">Your Kuriftu Companion</p>
         <p className="text-muted-foreground text-sm mt-1">Voice-first AI cultural guide</p>
+        <div className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+          <span>📍</span> Kuriftu Bishoftu
+        </div>
       </div>
 
       <div className="w-full max-w-sm space-y-3 mb-10">
@@ -47,7 +50,12 @@ export default function Welcome() {
             }`}
           >
             <div>
-              <p className="font-medium text-foreground">{lang.label}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-foreground">{lang.label}</p>
+                {lang.beta && (
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600">Beta</span>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground">{lang.native}</p>
             </div>
             {selected === lang.code && (

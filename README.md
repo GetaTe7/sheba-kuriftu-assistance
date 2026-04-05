@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# Sheba for Kuriftu
 
-TODO: Document your project here
+Sheba for Kuriftu — Your voice-first AI cultural companion for Ethiopian hospitality.
